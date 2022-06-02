@@ -1,5 +1,5 @@
 # Form Validator
-Validates incoming requests form values
+Validate the incoming request's form values
 
 # Install
 ```bash

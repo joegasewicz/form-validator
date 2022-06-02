@@ -8,20 +8,23 @@ import (
 // Config
 type Config struct {
 	MaxMemory int64
+	Fields    *map[string]bool
 }
 
 // ValidateForm
-func ValidateForm(r *http.Request, c Config) {
+func ValidateForm(r *http.Request, c Config) bool {
 	validMetaData := make(map[string]string)
 	r.ParseForm()
 	validate(r, &validMetaData, c)
+	return true
 }
 
 // ValidateMultiPartForm
-func ValidateMultiPartForm(r *http.Request, c Config) {
+func ValidateMultiPartForm(r *http.Request, c Config) bool {
 	validMetaData := make(map[string]string)
 	r.ParseMultipartForm(c.MaxMemory)
 	validate(r, &validMetaData, c)
+	return true
 }
 
 func validate(r *http.Request, v *map[string]string, c Config) {
