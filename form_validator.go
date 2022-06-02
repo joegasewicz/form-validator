@@ -5,16 +5,19 @@ import (
 	"net/http"
 )
 
+// Config
 type Config struct {
 	MaxMemory int64
 }
 
+// ValidateForm
 func ValidateForm(r *http.Request, c Config) {
 	validMetaData := make(map[string]string)
 	r.ParseForm()
 	validate(r, &validMetaData, c)
 }
 
+// ValidateMultiPartForm
 func ValidateMultiPartForm(r *http.Request, c Config) {
 	validMetaData := make(map[string]string)
 	r.ParseMultipartForm(c.MaxMemory)
