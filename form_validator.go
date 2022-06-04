@@ -37,20 +37,35 @@ type jsonError struct {
 func ValidateForm(r *http.Request, c *Config) bool {
 	r.ParseForm()
 	validate(r, c)
-	return true
+	return isFormValid(c)
 }
 
 // ValidateMultiPartForm
 func ValidateMultiPartForm(r *http.Request, c *Config) bool {
 	r.ParseMultipartForm(c.MaxMemory)
 	validate(r, c)
+	return isFormValid(c)
+}
+
+func isFormValid(c *Config) bool {
+	for _, f := range c.Fields {
+		if f.Error.Type != "" {
+			return false
+		}
+	}
 	return true
 }
 
 func convertToType(f *Field) {
 	switch f.Type {
 	case "string":
-		f.Value = f.Initial
+		if f.Initial != "" {
+			f.Value = f.Initial
+		} else {
+			if f.Default != "" {
+				f.Value = f.Default
+			}
+		}
 		break
 	case "float32":
 		float, err := strconv.ParseFloat(f.Initial, 32)
@@ -84,19 +99,22 @@ func convertToType(f *Field) {
 
 func validate(r *http.Request, c *Config) {
 	for key, value := range r.Form {
+		val := strings.Join(value, "")
 		for i, f := range c.Fields {
 			if f.Name == key {
-				c.Fields[i].Initial = strings.Join(value, "")
+				c.Fields[i].Initial = val
 				e := Error{
 					Message: "",
 					Type:    "",
 				}
 				if f.Validate {
-					if len(value) == 0 {
+					if val == "" {
 						e.Type = ERROR_MISSING_VALUE
 					}
 					if f.Type != "" {
-						convertToType(&f)
+						convertToType(&c.Fields[i])
+					} else {
+						f.Value = val
 					}
 				}
 				// Set Error Message
