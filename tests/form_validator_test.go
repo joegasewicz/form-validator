@@ -1,12 +1,11 @@
 package tests
 
 import (
-	"bytes"
-	"fmt"
 	form_validator "github.com/joegasewicz/form-validator"
-	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -17,30 +16,36 @@ func checkField(t *testing.T, err error) {
 	}
 }
 
+func createFormRequest(fn func(http.ResponseWriter, *http.Request)) {
+	handler := fn
+	// Create mock form
+	data := url.Values{}
+	data.Set("name", "Joe")
+	// Create POST request
+	r := httptest.NewRequest("POST", "/test", strings.NewReader(data.Encode()))
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	handler(w, r)
+}
+
 func TestValidateForm(t *testing.T) {
-	f := make(map[string]bool)
+	f := make(map[string]interface{})
+	f["name"] = map[string]interface{}{
+		"validate": true,
+		"default":  "default name",
+		"type":     "string",
+	}
 	c := form_validator.Config{
 		Fields: &f,
 	}
-	handler := func(w http.ResponseWriter, r *http.Request) {
+
+	createFormRequest(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 		if ok := form_validator.ValidateForm(r, c); ok {
-			fmt.Println("here-----> ")
+			// Passed
 		} else {
 			t.Log("Should not fail")
 			t.Fail()
 		}
-	}
-
-	// Create mock form
-	var form bytes.Buffer
-	formWriter := multipart.NewWriter(&form)
-	// name
-	formWriter.WriteField("name", "joe")
-	formWriter.Close()
-	// Create POST request
-	r := httptest.NewRequest("POST", "/test", &form)
-	r.Header.Set("Content-Type", "multipart/form-data")
-	w := httptest.NewRecorder()
-	handler(w, r)
-
+	})
 }
