@@ -7,6 +7,13 @@ const (
 	ERROR_INCORRECT_TYPE = "ERROR_INCORRECT_TYPE"
 )
 
+type FieldError struct {
+	Name  string
+	Error Error
+}
+
+type FormErrors []FieldError
+
 func missingValueError(name string) string {
 	return fmt.Sprintf("Missing value for %s field", name)
 }

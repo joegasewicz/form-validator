@@ -59,7 +59,6 @@ func setValueToInitialOrDefault(f *Field) string {
 	}
 	if f.Default != "" {
 		return f.Default
-
 	}
 	return ""
 }
@@ -194,8 +193,38 @@ func validate(r *http.Request, c *Config) {
 				}
 				// Set Error Message
 				c.Fields[i].Error = e
-				SetErrorMessage(&f)
+				SetErrorMessage(&c.Fields[i])
 			}
+		}
+	}
+}
+
+func GetFormValue(name string, c *Config) interface{} {
+	for _, v := range c.Fields {
+		if v.Name == name {
+			return v.Value
+		}
+	}
+	return nil
+}
+
+func GetFormError(name string, c *Config) Error {
+	var err Error
+	for _, v := range c.Fields {
+		if v.Name == name {
+			err = v.Error
+		}
+	}
+	return err
+}
+
+func GetAllFormErrors(c *Config, fe *FormErrors) {
+	for _, v := range c.Fields {
+		if v.Error.Type != "" {
+			*fe = append(*fe, FieldError{
+				Name:  v.Name,
+				Error: v.Error,
+			})
 		}
 	}
 }

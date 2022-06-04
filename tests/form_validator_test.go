@@ -310,3 +310,124 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 		}
 	})
 }
+
+func TestGetFormGenericValue(t *testing.T) {
+	c := form_validator.Config{
+		MaxMemory: 0,
+		Fields: []form_validator.Field{
+			{
+				Name:     "weight",
+				Validate: true,
+				Default:  "",
+				Type:     "float32",
+			},
+		},
+	}
+
+	// Create mock form
+	data := url.Values{}
+	data.Set("weight", "2.43")
+
+	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
+		if ok := form_validator.ValidateForm(r, &c); ok {
+			weight := c.Fields[0]
+			actual := form_validator.GetFormValue("weight", &c)
+			if float32(2.43) != actual {
+				t.Logf("expected 2.43 but got %s\n", weight.Initial)
+				t.Fail()
+			}
+		} else {
+			t.Logf("expected form to pass validation\n")
+			t.Fail()
+		}
+	})
+}
+
+func TestGetFormError(t *testing.T) {
+	c := form_validator.Config{
+		MaxMemory: 0,
+		Fields: []form_validator.Field{
+			{
+				Name:     "weight",
+				Validate: true,
+				Default:  "",
+				Type:     "float32",
+			},
+		},
+	}
+
+	// Create mock form
+	data := url.Values{}
+	data.Set("weight", "")
+
+	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
+		if ok := form_validator.ValidateForm(r, &c); ok {
+			t.Logf("expected form to pass validation\n")
+			t.Fail()
+		} else {
+			weight := c.Fields[0]
+			actual := form_validator.GetFormError("weight", &c)
+			if actual.Type != form_validator.ERROR_MISSING_VALUE {
+				t.Logf("expected %s but got %s\n", form_validator.ERROR_MISSING_VALUE, weight.Error.Type)
+				t.Fail()
+			}
+			if len(actual.Message) == 0 {
+				t.Logf("expected error message but got %s\n", actual.Message)
+				t.Fail()
+			}
+		}
+	})
+}
+
+func TestGetAllFormErrors(t *testing.T) {
+	c := form_validator.Config{
+		MaxMemory: 0,
+		Fields: []form_validator.Field{
+			{
+				Name:     "weight",
+				Validate: true,
+				Default:  "",
+				Type:     "float32",
+			},
+			{
+				Name:     "name",
+				Validate: true,
+				Default:  "",
+				Type:     "string",
+			},
+		},
+	}
+
+	// Create mock form
+	data := url.Values{}
+	data.Set("weight", "")
+	data.Set("name", "Joe")
+
+	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
+		if ok := form_validator.ValidateForm(r, &c); ok {
+			t.Logf("expected form to pass validation\n")
+			t.Fail()
+		} else {
+			weight := c.Fields[0]
+			var formErrs form_validator.FormErrors = form_validator.FormErrors{}
+			form_validator.GetAllFormErrors(&c, &formErrs)
+
+			if formErrs[0].Name != weight.Name {
+				t.Logf("expected form error name but got %s", formErrs[0].Name)
+				t.Fail()
+			}
+			if formErrs[0].Error.Type != form_validator.ERROR_MISSING_VALUE {
+				t.Logf("expected form error type but got %s", formErrs[0].Error.Type)
+				t.Fail()
+			}
+			if len(formErrs[0].Error.Message) == 0 {
+				t.Logf("expected form error message")
+				t.Fail()
+			}
+			if len(formErrs) != 1 {
+				t.Logf("expected errors of length 1 but got %d", len(formErrs))
+				t.Fail()
+			}
+		}
+	})
+}
