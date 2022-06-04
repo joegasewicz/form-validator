@@ -56,37 +56,60 @@ func isFormValid(c *Config) bool {
 	return true
 }
 
+func setValueToInitialOrDefault(f *Field) string {
+	// Returns value only if first, initial has a value
+	// then if default exist otherwise returns ""
+	if f.Initial != "" {
+		return f.Initial
+	}
+	if f.Default != "" {
+		return f.Default
+
+	}
+	return ""
+}
+
 func convertToType(f *Field) {
 	switch f.Type {
 	case "string":
-		if f.Initial != "" {
-			f.Value = f.Initial
-		} else {
-			if f.Default != "" {
-				f.Value = f.Default
-			}
-		}
+		f.Value = setValueToInitialOrDefault(f)
 		break
-	case "float32":
-		float, err := strconv.ParseFloat(f.Initial, 32)
+	case "bool":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		b, err := strconv.ParseBool(initialOrDefault)
 		if err != nil {
-			log.Printf("Error converting value of %s to type float32\n", f.Initial)
+			log.Printf("Error converting value of %s to type bool\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = b
+	case "float32":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		float, err := strconv.ParseFloat(initialOrDefault, 32)
+		if err != nil {
+			log.Printf("Error converting value of %s to type float32\n", initialOrDefault)
 			f.Type = ERROR_INCORRECT_TYPE
 		} else {
-			f.Value = float
+			f.Value = float32(float)
 		}
 		break
 	case "float64":
-		float, err := strconv.ParseFloat(f.Initial, 64)
+		initialOrDefault := setValueToInitialOrDefault(f)
+		float, err := strconv.ParseFloat(initialOrDefault, 64)
 		if err != nil {
-			log.Printf("Error converting value of %s to type float64\n", f.Initial)
+			log.Printf("Error converting value of %s to type float64\n", initialOrDefault)
 			f.Type = ERROR_INCORRECT_TYPE
 		} else {
-			f.Value = float
+			f.Value = float // float64
 		}
 		break
-	case "bool":
 	case "uint8":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseUint(initialOrDefault, 10, 8)
+		if err != nil {
+			log.Printf("Error converting value of %s to type uint8\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = uint8(u)
 	case "uint16":
 	case "uint32":
 	case "uint63":
