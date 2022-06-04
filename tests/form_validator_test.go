@@ -186,6 +186,36 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 				Default:  "",
 				Type:     "uint64",
 			},
+			{
+				Name:     "is_int8",
+				Validate: true,
+				Default:  "",
+				Type:     "int8",
+			},
+			{
+				Name:     "is_int16",
+				Validate: true,
+				Default:  "",
+				Type:     "int16",
+			},
+			{
+				Name:     "is_int32",
+				Validate: true,
+				Default:  "",
+				Type:     "int32",
+			},
+			{
+				Name:     "is_int64",
+				Validate: true,
+				Default:  "",
+				Type:     "int64",
+			},
+			{
+				Name:     "is_int",
+				Validate: true,
+				Default:  "",
+				Type:     "int",
+			},
 		},
 	}
 
@@ -199,6 +229,11 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 	data.Set("is_uint16", "65535")
 	data.Set("is_uint32", "4294967295")
 	data.Set("is_uint64", "18446744073709551615")
+	data.Set("is_int8", "127")
+	data.Set("is_int16", "32767")
+	data.Set("is_int32", "2147483647")
+	data.Set("is_int64", "18446744073709551615")
+	data.Set("is_int", "100")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
 		if ok := form_validator.ValidateForm(r, &c); ok {
@@ -211,6 +246,11 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 			is_uint16 := c.Fields[5]
 			is_uint32 := c.Fields[6]
 			is_uint64 := c.Fields[7]
+			is_int8 := c.Fields[8]
+			is_int16 := c.Fields[9]
+			is_int32 := c.Fields[10]
+			is_int64 := c.Fields[11]
+			is_int := c.Fields[12]
 
 			if name.Value != "Joe" {
 				t.Logf("expected Joe but got %s\n", name.Value)
@@ -242,6 +282,26 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 			}
 			if is_uint64.Value != uint64(18446744073709551615) {
 				t.Logf("expected is_uint64 but got %s\n", is_uint64.Value)
+				t.Fail()
+			}
+			if is_int8.Value != int8(127) {
+				t.Logf("expected is_int8 but got %s\n", is_int8.Value)
+				t.Fail()
+			}
+			if is_int16.Value != int16(32767) {
+				t.Logf("expected is_int16 but got %s\n", is_int16.Value)
+				t.Fail()
+			}
+			if is_int32.Value != int32(2147483647) {
+				t.Logf("expected is_int32 but got %s\n", is_int32.Value)
+				t.Fail()
+			}
+			if is_int64.Value != int64(9223372036854775807) {
+				t.Logf("expected is_int64 but got %s\n", is_int64.Value)
+				t.Fail()
+			}
+			if is_int.Value != 100 {
+				t.Logf("expected is_int but got %s\n", is_int.Value)
 				t.Fail()
 			}
 		} else {

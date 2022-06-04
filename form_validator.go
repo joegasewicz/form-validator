@@ -97,6 +97,14 @@ func convertToType(f *Field) {
 			f.Value = float // float64
 		}
 		break
+	case "int":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.Atoi(initialOrDefault)
+		if err != nil {
+			log.Printf("Error converting value of %s to type int\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = u
 	case "uint8":
 		initialOrDefault := setValueToInitialOrDefault(f)
 		u, err := strconv.ParseUint(initialOrDefault, 10, 8)
