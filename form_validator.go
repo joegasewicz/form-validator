@@ -84,9 +84,9 @@ func convertToType(f *Field) {
 
 func validate(r *http.Request, c *Config) {
 	for key, value := range r.Form {
-		for _, f := range c.Fields {
+		for i, f := range c.Fields {
 			if f.Name == key {
-				f.Initial = strings.Join(value, "")
+				c.Fields[i].Initial = strings.Join(value, "")
 				e := Error{
 					Message: "",
 					Type:    "",
@@ -100,7 +100,7 @@ func validate(r *http.Request, c *Config) {
 					}
 				}
 				// Set Error Message
-				f.Error = e
+				c.Fields[i].Error = e
 				SetErrorMessage(&f)
 			}
 		}

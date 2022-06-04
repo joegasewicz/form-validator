@@ -21,6 +21,7 @@ func createFormRequest(fn func(http.ResponseWriter, *http.Request)) {
 	// Create mock form
 	data := url.Values{}
 	data.Set("name", "Joe")
+	data.Set("email", "joe@email.com")
 	// Create POST request
 	r := httptest.NewRequest("POST", "/test", strings.NewReader(data.Encode()))
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -52,6 +53,7 @@ func TestValidateForm(t *testing.T) {
 		if ok := form_validator.ValidateForm(r, &c); ok {
 			// Name
 			name := c.Fields[0]
+			email := c.Fields[1]
 			if name.Name != "name" {
 				t.Logf("expected name but got %s\n", name.Name)
 				t.Fail()
@@ -72,7 +74,33 @@ func TestValidateForm(t *testing.T) {
 				t.Logf("expected Joe but got %s\n", name.Initial)
 				t.Fail()
 			}
+			if name.Error.Message != "" {
+				t.Logf("expected no errors but got %s\n", name.Error.Message)
+			}
 			// Email
+			if email.Name != "email" {
+				t.Logf("expected email but got %s\n", name.Name)
+				t.Fail()
+			}
+			if email.Validate != false {
+				t.Logf("expected false but got %v", email.Validate)
+				t.Fail()
+			}
+			if email.Default != "" {
+				t.Logf("expected '' but got %s\n", email.Default)
+				t.Fail()
+			}
+			if email.Type != "string" {
+				t.Logf("expected string but got %s\n", email.Type)
+				t.Fail()
+			}
+			if email.Initial != "joe@email.com" {
+				t.Logf("expected Joe but got %s\n", email.Initial)
+				t.Fail()
+			}
+			if email.Error.Message != "" {
+				t.Logf("expected no errors but got %s\n", email.Error.Message)
+			}
 
 		} else {
 			t.Log("Should not fail")
