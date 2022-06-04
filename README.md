@@ -28,7 +28,8 @@ c := Config{
 # Example
 Form with text fields
 ```go
-if ok, v := ValidateForm(r, Config{}); ok {
+
+if ok, json := ValidateForm(r, &c); ok {
 	// Form is valid
 } else {
 	// Handle form errors
@@ -36,7 +37,7 @@ if ok, v := ValidateForm(r, Config{}); ok {
 ```
 Form with text / files
 ```go
-if ok, v := ValidateMultiPartForm(r, Config{MaxMemory: 1200}); ok {
+if ok, json := ValidateMultiPartForm(r, &c); ok {
 	// Form is valid
 } else {
 	// Handle form errors
