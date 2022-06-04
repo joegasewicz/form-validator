@@ -168,6 +168,24 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 				Default:  "",
 				Type:     "uint8",
 			},
+			{
+				Name:     "is_uint16",
+				Validate: true,
+				Default:  "",
+				Type:     "uint16",
+			},
+			{
+				Name:     "is_uint32",
+				Validate: true,
+				Default:  "",
+				Type:     "uint32",
+			},
+			{
+				Name:     "is_uint64",
+				Validate: true,
+				Default:  "",
+				Type:     "uint64",
+			},
 		},
 	}
 
@@ -178,6 +196,9 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 	data.Set("is_float32", "0.12345679")
 	data.Set("is_float64", "0.12345678912121212")
 	data.Set("is_uint8", "255")
+	data.Set("is_uint16", "65535")
+	data.Set("is_uint32", "4294967295")
+	data.Set("is_uint64", "18446744073709551615")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
 		if ok := form_validator.ValidateForm(r, &c); ok {
@@ -187,6 +208,10 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 			is_float32 := c.Fields[2]
 			is_float64 := c.Fields[3]
 			is_uint8 := c.Fields[4]
+			is_uint16 := c.Fields[5]
+			is_uint32 := c.Fields[6]
+			is_uint64 := c.Fields[7]
+
 			if name.Value != "Joe" {
 				t.Logf("expected Joe but got %s\n", name.Value)
 				t.Fail()
@@ -205,6 +230,18 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 			}
 			if is_uint8.Value != uint8(255) {
 				t.Logf("expected is_uint8 but got %s\n", is_uint8.Value)
+				t.Fail()
+			}
+			if is_uint16.Value != uint16(65535) {
+				t.Logf("expected is_uint16 but got %s\n", is_uint16.Value)
+				t.Fail()
+			}
+			if is_uint32.Value != uint32(4294967295) {
+				t.Logf("expected is_uint32 but got %s\n", is_uint32.Value)
+				t.Fail()
+			}
+			if is_uint64.Value != uint64(18446744073709551615) {
+				t.Logf("expected is_uint64 but got %s\n", is_uint64.Value)
 				t.Fail()
 			}
 		} else {

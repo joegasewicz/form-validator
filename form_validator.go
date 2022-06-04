@@ -28,11 +28,6 @@ type Error struct {
 	Type    string
 }
 
-type jsonError struct {
-	Name    string `json:"name"`
-	Message string `json:"message"`
-}
-
 // ValidateForm
 func ValidateForm(r *http.Request, c *Config) bool {
 	r.ParseForm()
@@ -111,12 +106,61 @@ func convertToType(f *Field) {
 		}
 		f.Value = uint8(u)
 	case "uint16":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseUint(initialOrDefault, 10, 16)
+		if err != nil {
+			log.Printf("Error converting value of %s to type uint16\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = uint16(u)
 	case "uint32":
-	case "uint63":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseUint(initialOrDefault, 10, 32)
+		if err != nil {
+			log.Printf("Error converting value of %s to type uint32\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = uint32(u)
+	case "uint64":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseUint(initialOrDefault, 10, 64)
+		if err != nil {
+			log.Printf("Error converting value of %s to type uint64\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = u // uint64
 	case "int8":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseInt(initialOrDefault, 10, 8)
+		if err != nil {
+			log.Printf("Error converting value of %s to type int8\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = int8(u)
 	case "int16":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseInt(initialOrDefault, 10, 16)
+		if err != nil {
+			log.Printf("Error converting value of %s to type int16\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = int16(u)
 	case "int32":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseInt(initialOrDefault, 10, 32)
+		if err != nil {
+			log.Printf("Error converting value of %s to type int32\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = int32(u)
 	case "int64":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseInt(initialOrDefault, 10, 64)
+		if err != nil {
+			log.Printf("Error converting value of %s to type int64\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = u // int64
 	}
 }
 
