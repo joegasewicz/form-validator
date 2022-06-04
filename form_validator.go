@@ -104,6 +104,14 @@ func convertToType(f *Field) {
 			f.Type = ERROR_INCORRECT_TYPE
 		}
 		f.Value = u
+	case "uint":
+		initialOrDefault := setValueToInitialOrDefault(f)
+		u, err := strconv.ParseUint(initialOrDefault, 10, 64)
+		if err != nil {
+			log.Printf("Error converting value of %s to type uint\n", initialOrDefault)
+			f.Type = ERROR_INCORRECT_TYPE
+		}
+		f.Value = uint(u)
 	case "uint8":
 		initialOrDefault := setValueToInitialOrDefault(f)
 		u, err := strconv.ParseUint(initialOrDefault, 10, 8)
@@ -172,6 +180,7 @@ func convertToType(f *Field) {
 }
 
 func validate(r *http.Request, c *Config) {
+	var fileErr error
 	for key, value := range r.Form {
 		val := strings.Join(value, "")
 		for i, f := range c.Fields {
@@ -187,13 +196,20 @@ func validate(r *http.Request, c *Config) {
 					}
 					if f.Type != "" {
 						convertToType(&c.Fields[i])
+						// Handle file validation
+						if f.Type == "file" {
+							_, _, fileErr = r.FormFile(f.Name)
+							if fileErr != nil {
+								f.Error.Type = ERROR_FILE_TYPE
+							}
+						}
 					} else {
 						f.Value = val
 					}
 				}
 				// Set Error Message
 				c.Fields[i].Error = e
-				SetErrorMessage(&c.Fields[i])
+				SetErrorMessage(&c.Fields[i], fileErr)
 			}
 		}
 	}

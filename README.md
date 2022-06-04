@@ -37,7 +37,7 @@ if ok := ValidateForm(r, &c); ok {
 	// Handle form errors
 }
 ```
-Form with text / files
+Form with files & text fields
 ```go
 if ok := ValidateMultiPartForm(r, &c); ok {
 	// Form is valid

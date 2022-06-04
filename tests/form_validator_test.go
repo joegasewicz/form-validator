@@ -216,6 +216,12 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 				Default:  "",
 				Type:     "int",
 			},
+			{
+				Name:     "is_uint",
+				Validate: true,
+				Default:  "",
+				Type:     "uint",
+			},
 		},
 	}
 
@@ -234,6 +240,7 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 	data.Set("is_int32", "2147483647")
 	data.Set("is_int64", "18446744073709551615")
 	data.Set("is_int", "100")
+	data.Set("is_uint", "255")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
 		if ok := form_validator.ValidateForm(r, &c); ok {
@@ -251,6 +258,7 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 			is_int32 := c.Fields[10]
 			is_int64 := c.Fields[11]
 			is_int := c.Fields[12]
+			is_uint := c.Fields[13]
 
 			if name.Value != "Joe" {
 				t.Logf("expected Joe but got %s\n", name.Value)
@@ -302,6 +310,10 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 			}
 			if is_int.Value != 100 {
 				t.Logf("expected is_int but got %s\n", is_int.Value)
+				t.Fail()
+			}
+			if is_uint.Value != uint(255) {
+				t.Logf("expected is_uint but got %s\n", is_uint.Value)
 				t.Fail()
 			}
 		} else {
