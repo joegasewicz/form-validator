@@ -190,8 +190,9 @@ func validate(r *http.Request, c *Config) {
 					Message: "",
 					Type:    "",
 				}
+				// Validate the field value
 				if f.Validate {
-					if val == "" {
+					if val == "" || val == "<nil>" {
 						e.Type = ERROR_MISSING_VALUE
 					}
 					if f.Type != "" {
@@ -211,36 +212,6 @@ func validate(r *http.Request, c *Config) {
 				c.Fields[i].Error = e
 				SetErrorMessage(&c.Fields[i], fileErr)
 			}
-		}
-	}
-}
-
-func GetFormValue(name string, c *Config) interface{} {
-	for _, v := range c.Fields {
-		if v.Name == name {
-			return v.Value
-		}
-	}
-	return nil
-}
-
-func GetFormError(name string, c *Config) Error {
-	var err Error
-	for _, v := range c.Fields {
-		if v.Name == name {
-			err = v.Error
-		}
-	}
-	return err
-}
-
-func GetAllFormErrors(c *Config, fe *FormErrors) {
-	for _, v := range c.Fields {
-		if v.Error.Type != "" {
-			*fe = append(*fe, FieldError{
-				Name:  v.Name,
-				Error: v.Error,
-			})
 		}
 	}
 }

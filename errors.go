@@ -41,3 +41,24 @@ func SetErrorMessage(f *Field, fileErr error) {
 		// pass
 	}
 }
+
+func GetFormError(name string, c *Config) Error {
+	var err Error
+	for _, v := range c.Fields {
+		if v.Name == name {
+			err = v.Error
+		}
+	}
+	return err
+}
+
+func GetAllFormErrors(c *Config, fe *FormErrors) {
+	for _, v := range c.Fields {
+		if v.Error.Type != "" {
+			*fe = append(*fe, FieldError{
+				Name:  v.Name,
+				Error: v.Error,
+			})
+		}
+	}
+}

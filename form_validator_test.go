@@ -1,7 +1,6 @@
-package tests
+package form_validator
 
 import (
-	form_validator "github.com/joegasewicz/form-validator"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -19,9 +18,9 @@ func createFormRequest(data url.Values, fn func(http.ResponseWriter, *http.Reque
 }
 
 func TestValidFormContainsFieldMembers(t *testing.T) {
-	c := form_validator.Config{
+	c := Config{
 		MaxMemory: 0,
-		Fields: []form_validator.Field{
+		Fields: []Field{
 			{
 				Name:     "name",
 				Validate: true,
@@ -44,7 +43,7 @@ func TestValidFormContainsFieldMembers(t *testing.T) {
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		if ok := form_validator.ValidateForm(r, &c); ok {
+		if ok := ValidateForm(r, &c); ok {
 			// Name
 			name := c.Fields[0]
 			email := c.Fields[1]
@@ -104,9 +103,9 @@ func TestValidFormContainsFieldMembers(t *testing.T) {
 }
 
 func TestFormFailsValueEmptyString(t *testing.T) {
-	c := form_validator.Config{
+	c := Config{
 		MaxMemory: 0,
-		Fields: []form_validator.Field{
+		Fields: []Field{
 			{
 				Name:     "name",
 				Validate: true,
@@ -121,7 +120,7 @@ func TestFormFailsValueEmptyString(t *testing.T) {
 	data.Set("name", "")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
-		if ok := form_validator.ValidateForm(r, &c); ok {
+		if ok := ValidateForm(r, &c); ok {
 			t.Logf("expected form to fail validation\n")
 			t.Fail()
 		} else {
@@ -135,9 +134,9 @@ func TestFormFailsValueEmptyString(t *testing.T) {
 }
 
 func TestAllTypeConversionSuccessful(t *testing.T) {
-	c := form_validator.Config{
+	c := Config{
 		MaxMemory: 0,
-		Fields: []form_validator.Field{
+		Fields: []Field{
 			{
 				Name:     "name",
 				Validate: true,
@@ -243,7 +242,7 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 	data.Set("is_uint", "255")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
-		if ok := form_validator.ValidateForm(r, &c); ok {
+		if ok := ValidateForm(r, &c); ok {
 
 			name := c.Fields[0]
 			is_bool := c.Fields[1]
@@ -324,9 +323,9 @@ func TestAllTypeConversionSuccessful(t *testing.T) {
 }
 
 func TestGetFormGenericValue(t *testing.T) {
-	c := form_validator.Config{
+	c := Config{
 		MaxMemory: 0,
-		Fields: []form_validator.Field{
+		Fields: []Field{
 			{
 				Name:     "weight",
 				Validate: true,
@@ -341,9 +340,9 @@ func TestGetFormGenericValue(t *testing.T) {
 	data.Set("weight", "2.43")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
-		if ok := form_validator.ValidateForm(r, &c); ok {
+		if ok := ValidateForm(r, &c); ok {
 			weight := c.Fields[0]
-			actual := form_validator.GetFormValue("weight", &c)
+			actual := getFormValue("weight", &c)
 			if float32(2.43) != actual {
 				t.Logf("expected 2.43 but got %s\n", weight.Initial)
 				t.Fail()
@@ -356,9 +355,9 @@ func TestGetFormGenericValue(t *testing.T) {
 }
 
 func TestGetFormError(t *testing.T) {
-	c := form_validator.Config{
+	c := Config{
 		MaxMemory: 0,
-		Fields: []form_validator.Field{
+		Fields: []Field{
 			{
 				Name:     "weight",
 				Validate: true,
@@ -373,14 +372,14 @@ func TestGetFormError(t *testing.T) {
 	data.Set("weight", "")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
-		if ok := form_validator.ValidateForm(r, &c); ok {
+		if ok := ValidateForm(r, &c); ok {
 			t.Logf("expected form to pass validation\n")
 			t.Fail()
 		} else {
 			weight := c.Fields[0]
-			actual := form_validator.GetFormError("weight", &c)
-			if actual.Type != form_validator.ERROR_MISSING_VALUE {
-				t.Logf("expected %s but got %s\n", form_validator.ERROR_MISSING_VALUE, weight.Error.Type)
+			actual := GetFormError("weight", &c)
+			if actual.Type != ERROR_MISSING_VALUE {
+				t.Logf("expected %s but got %s\n", ERROR_MISSING_VALUE, weight.Error.Type)
 				t.Fail()
 			}
 			if len(actual.Message) == 0 {
@@ -392,9 +391,9 @@ func TestGetFormError(t *testing.T) {
 }
 
 func TestGetAllFormErrors(t *testing.T) {
-	c := form_validator.Config{
+	c := Config{
 		MaxMemory: 0,
-		Fields: []form_validator.Field{
+		Fields: []Field{
 			{
 				Name:     "weight",
 				Validate: true,
@@ -416,19 +415,19 @@ func TestGetAllFormErrors(t *testing.T) {
 	data.Set("name", "Joe")
 
 	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
-		if ok := form_validator.ValidateForm(r, &c); ok {
+		if ok := ValidateForm(r, &c); ok {
 			t.Logf("expected form to pass validation\n")
 			t.Fail()
 		} else {
 			weight := c.Fields[0]
-			var formErrs form_validator.FormErrors = form_validator.FormErrors{}
-			form_validator.GetAllFormErrors(&c, &formErrs)
+			var formErrs FormErrors = FormErrors{}
+			GetAllFormErrors(&c, &formErrs)
 
 			if formErrs[0].Name != weight.Name {
 				t.Logf("expected form error name but got %s", formErrs[0].Name)
 				t.Fail()
 			}
-			if formErrs[0].Error.Type != form_validator.ERROR_MISSING_VALUE {
+			if formErrs[0].Error.Type != ERROR_MISSING_VALUE {
 				t.Logf("expected form error type but got %s", formErrs[0].Error.Type)
 				t.Fail()
 			}
