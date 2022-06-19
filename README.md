@@ -26,7 +26,11 @@ c := form_validator.Config{
     },
 }
 ```
-
+The types are as followed
+ - Name field is the form's 'name' value
+ - Validate sets whether the field requires validation
+ - Default set a default value is the form field empty
+ - Type sets the type conversion e.g. int8, uint, float16 ...
 # Example
 Form with text fields
 ```go
@@ -57,12 +61,23 @@ name := GetFormValue("name", &c)
 ```go
 name := GetFormError("name", &c)
 ```
-
-`GetAllFormErrors` gets all form errors
+#### GetFormErrors
+`GetFormErrors` access all form errors as a map (`FormErrors`) indexed off the form names
 ```go
-var formErrs FormErrors = FormErrors{}
-GetAllFormErrors(&c, &formErrs)
+var formErrs = form_validator.FormErrors{}
+form_validator.GetFormErrors(&c, &formErrs)
 ```
+If the results of `formErrs` are passed to the template as data then
+all form errors can be accessed from the map via index name, for example:
+```go
+{{ if .FormErrors.title }}
+           <div class="alert alert-danger" role="alert">
+               {{ .FormErrors.title.error }}
+           </div>
+ {{ end }}
+```
+In this case `FormErrors.title.error` will produce an error message that
+can be safely displayed to the user.
 
 ### Form Value Type Conversion
 To convert a form value to a specific type, set the `Type` value in the `Field` struct, for example
