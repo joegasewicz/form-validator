@@ -61,7 +61,7 @@ name := GetFormValue("name", &c)
 ```go
 name := GetFormError("name", &c)
 ```
-#### GetFormErrors
+### GetFormErrors
 `GetFormErrors` access all form errors as a map (`FormErrors`) indexed off the form names
 ```go
 var formErrs = form_validator.FormErrors{}
@@ -99,3 +99,14 @@ The following type conversions are supported:
 - int, float32, float64
 - int8, int16, int32, int64
 - uint8, uint16, uint32, uint64
+
+#### Get the form field value's correct value & type
+There are `Get<TYPE>(name string, *Config)` functions for each supported type.
+For example
+```go
+var title string
+title, _ = GetString("title", &c)
+
+var id int32
+id, _ = GetInt32("id", &c)
+```
