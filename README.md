@@ -26,7 +26,7 @@ c := form_validator.Config{
     },
 }
 ```
-The types are as followed
+The Field type properties are:
  - Name field is the form's 'name' value
  - Validate sets whether the field requires validation
  - Default set a default value is the form field empty
