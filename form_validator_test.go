@@ -1,6 +1,7 @@
 package form_validator
 
 import (
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -442,3 +443,68 @@ func TestGetFormError(t *testing.T) {
 //		}
 //	})
 //}
+
+func TestGetFormErrors(t *testing.T) {
+	t.Parallel()
+
+	testcases := map[string]struct {
+		field   []Field
+		wantRes map[string]map[string]string
+	}{
+		"exist error": {
+			field: []Field{
+				{
+					Name: "weight",
+					Error: Error{
+						Message: "weight error message",
+						Type:    "string",
+					},
+				},
+				{
+					Name: "height",
+					Error: Error{
+						Message: "height error message",
+						Type:    "string",
+					},
+				},
+			},
+			wantRes: map[string]map[string]string{
+				"weight": {
+					"weight": "weight",
+					"error":  "weight error message",
+				}, "height": {
+					"height": "height",
+					"error":  "height error message",
+				}},
+		},
+		"empty": {
+			field:   []Field{},
+			wantRes: map[string]map[string]string{},
+		},
+	}
+
+	for name, tt := range testcases {
+		name := name
+		tt := tt
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := Config{
+				MaxMemory: 0,
+				Fields:    tt.field,
+			}
+			var formErrors = FormErrors{}
+			GetFormErrors(&cfg, &formErrors)
+			if len(tt.wantRes) == 0 {
+				assert.Len(t, formErrors, 0, "formErrors must be empty")
+			} else {
+				for _, val := range tt.field {
+					formError := formErrors[val.Name]
+					assert.Equal(t, tt.wantRes[val.Name][val.Name], formError[val.Name], "name is not equal")
+					assert.Equal(t, tt.wantRes[val.Name]["error"], formError["error"], "error message is not equal")
+				}
+			}
+		})
+	}
+}
