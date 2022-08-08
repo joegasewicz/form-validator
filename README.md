@@ -49,12 +49,6 @@ if ok := ValidateMultiPartForm(r, &c); ok {
 	// Handle form errors
 }
 ```
-### Form Values
-`GetFormValue` gets a single form field value
-
-```go
-name := GetFormValue("name", &c)
-```
 
 ### Form Value Errors
 `GetFormError` gets a single form error
