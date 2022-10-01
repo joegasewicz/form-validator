@@ -12,19 +12,33 @@ c := form_validator.Config{
     MaxMemory: 0,
     Fields: []form_validator.Field{
         {
-            Name:     "name",
+            Name:     "email",
             Validate: true,
-            Default:  "John",
             Type:     "string",
         },
         {
             Name:     "email",
-            Validate: false,
-            Default:  "",
+            Validate: true,
             Type:     "string",
+        },
+        {
+            Name:     "confirm_email",
+            Validate: true,
+            Type:     "string",
+            Matches:  "email", // checks that email & confirm_email match
         },
     },
 }
+
+if ok := form_validator.ValidateForm(r, &c); ok {
+    eail, _ := form_validator.GetString("email", &c)
+    password, _ := form_validator.GetString("password", &c)
+} else {
+	// Get all the form errors
+    var formErrs = form_validator.FormErrors{}
+    form_validator.GetFormErrors(&c, &formErrs) 
+}
+
 ```
 The Field type properties are:
  - Name field is the form's 'name' value
@@ -50,6 +64,28 @@ if ok := ValidateMultiPartForm(r, &c); ok {
 }
 ```
 
+### Match field values (password confirmation)
+If you require password fields, for example to be matched, then assign a `Matches` value to a field:
+```go
+c := Config{
+        MaxMemory: 0,
+        Fields: []Field{
+            {
+                Name:     "password",
+                Validate: true,
+                Type:     "string",
+            },
+            {
+                Name:     "confirm_password",
+                Validate: true,
+                Type:     "string",
+                Matches:  "password",
+            },
+        },
+}
+```
+The above validation will fail if the `password` field's value is not the same as the `confirm_password` field.
+
 ### Form Value Errors
 `GetFormError` gets a single form error
 ```go
@@ -73,6 +109,18 @@ all form errors can be accessed from the map via index name, for example:
 In this case `FormErrors.title.error` will produce an error message that
 can be safely displayed to the user.
 
+#### Get the form field value's correct value & type
+There are `Get<TYPE>(name string, *Config)` functions for each supported type.
+For example
+```go
+var title string
+title, _ = GetString("title", &c)
+
+var id int32
+id, _ = GetInt32("id", &c)
+```
+
+
 ### Form Value Type Conversion
 To convert a form value to a specific type, set the `Type` value in the `Field` struct, for example
 ```go
@@ -94,13 +142,3 @@ The following type conversions are supported:
 - int8, int16, int32, int64
 - uint8, uint16, uint32, uint64
 
-#### Get the form field value's correct value & type
-There are `Get<TYPE>(name string, *Config)` functions for each supported type.
-For example
-```go
-var title string
-title, _ = GetString("title", &c)
-
-var id int32
-id, _ = GetInt32("id", &c)
-```
