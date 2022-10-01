@@ -3,9 +3,10 @@ package form_validator
 import "fmt"
 
 const (
-	ERROR_MISSING_VALUE  = "ERROR_MISSING_VALUE"
-	ERROR_INCORRECT_TYPE = "ERROR_INCORRECT_TYPE"
-	ERROR_FILE_TYPE      = "ERROR_FILE_TYPE"
+	ERROR_MISSING_VALUE       = "ERROR_MISSING_VALUE"
+	ERROR_INCORRECT_TYPE      = "ERROR_INCORRECT_TYPE"
+	ERROR_FILE_TYPE           = "ERROR_FILE_TYPE"
+	ERROR_FIELDS_DO_NOT_MATCH = "ERROR_FIELDS_DO_NOT_MATCH"
 )
 
 type FieldError struct {
@@ -29,6 +30,10 @@ func fileError(err error) string {
 	return fmt.Sprintf("File error: %e", err)
 }
 
+func fieldsDoNotMatch(field, matchedField string) string {
+	return fmt.Sprintf("Fields %s and %s should match.", field, matchedField)
+}
+
 func setErrorMessage(f *Field, fileErr error) {
 	switch f.Error.Type {
 	case ERROR_MISSING_VALUE:
@@ -39,6 +44,8 @@ func setErrorMessage(f *Field, fileErr error) {
 		break
 	case ERROR_FILE_TYPE:
 		f.Error.Message = fileError(fileErr)
+	case ERROR_FIELDS_DO_NOT_MATCH:
+		f.Error.Message = fieldsDoNotMatch(f.Name, f.Matches)
 	default:
 		// pass
 	}
@@ -46,8 +53,7 @@ func setErrorMessage(f *Field, fileErr error) {
 
 // GetFormError access a single form error value
 //
-//		name := GetFormError("name", &c)
-//
+//	name := GetFormError("name", &c)
 func GetFormError(name string, c *Config) Error {
 	var err Error
 	for _, v := range c.Fields {
@@ -60,17 +66,17 @@ func GetFormError(name string, c *Config) Error {
 
 // GetFormErrors access all form errors as a map (`FormErrors`) indexed off the form names
 //
-//		var formErrs = form_validator.FormErrors{}
-//		form_validator.GetFormErrors(&c, &formErrs)
+//	var formErrs = form_validator.FormErrors{}
+//	form_validator.GetFormErrors(&c, &formErrs)
 //
 // If the results of `formErrs` are passed to the template as data then
 // all form errors can be accessed from the map via index name, for example:
 //
-//		{{ if .FormErrors.title }}
-//                <div class="alert alert-danger" role="alert">
-//                    {{ .FormErrors.title.error }}
-//                </div>
-//      {{ end }}
+//			{{ if .FormErrors.title }}
+//	               <div class="alert alert-danger" role="alert">
+//	                   {{ .FormErrors.title.error }}
+//	               </div>
+//	     {{ end }}
 //
 // In this case `FormErrors.title.error` will produce an error message that
 // can be safely displayed to the user.

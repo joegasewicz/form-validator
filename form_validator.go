@@ -9,25 +9,26 @@ import (
 
 // Config the `Fields` struct field is where the form values are declared
 //
-//		c := form_validator.Config{
-//    		MaxMemory: 0,
-//    		Fields: []form_validator.Field{
-//        		{
-//            		Name:     "name",
-//            		Validate: false,
-//            		Default:  "John",
-//            		Type:     "string",
-//        		},
-//        		{
-//            		Name:     "email",
-//            		Validate: false,
-//            		Default:  "",
-//            		Type:     "string",
-//        		},
-//    		},
-//		}
+//			c := form_validator.Config{
+//	   		MaxMemory: 0,
+//	   		Fields: []form_validator.Field{
+//	       		{
+//	           		Name:     "name",
+//	           		Validate: false,
+//	           		Default:  "John",
+//	           		Type:     "string",
+//	       		},
+//	       		{
+//	           		Name:     "email",
+//	           		Validate: false,
+//	           		Default:  "",
+//	           		Type:     "string",
+//	       		},
+//	   		},
+//			}
 //
-//	The types are as followed
+//		The types are as followed
+//
 // - Name field is the form's 'name' value
 // - Validate sets whether the field requires validation
 // - Default set a default value is the form field empty
@@ -46,6 +47,7 @@ type Field struct {
 	Value    interface{}
 	Initial  string
 	Error    Error
+	Matches  string
 }
 
 // Error object holds the error type & a message to display to the user
@@ -56,12 +58,11 @@ type Error struct {
 
 // ValidateForm validates a form
 //
-//		if ok := form_validator.ValidateForm(r, &c); ok {
-//			// form is valid
-//		} else {
-//			// form is invalid
-//		}
-//
+//	if ok := form_validator.ValidateForm(r, &c); ok {
+//		// form is valid
+//	} else {
+//		// form is invalid
+//	}
 func ValidateForm(r *http.Request, c *Config) bool {
 	for _, f := range c.Fields {
 		if f.Type == "file" {
@@ -78,12 +79,11 @@ func ValidateForm(r *http.Request, c *Config) bool {
 
 // ValidateMultiPartForm validates a multipart form
 //
-//		if ok := form_validator.ValidateMultiPartForm(r, &c); ok {
-//			// form is valid
-//		} else {
-//			// form is invalid
-//		}
-//
+//	if ok := form_validator.ValidateMultiPartForm(r, &c); ok {
+//		// form is valid
+//	} else {
+//		// form is invalid
+//	}
 func ValidateMultiPartForm(r *http.Request, c *Config) bool {
 	r.ParseMultipartForm(c.MaxMemory)
 	validate(r, c)
@@ -227,8 +227,20 @@ func convertToType(f *Field) {
 	}
 }
 
+func setFieldByName(c *Config, match string, field *Field) {
+	for i, f := range c.Fields {
+		if f.Name == match {
+			*field = c.Fields[i]
+		}
+	}
+}
+
 func validate(r *http.Request, c *Config) {
 	var fileErr error
+	e := Error{
+		Message: "",
+		Type:    "",
+	}
 	if len(r.Form) == 0 {
 		// Set all form fields as errored
 		for i, _ := range c.Fields {
@@ -242,10 +254,6 @@ func validate(r *http.Request, c *Config) {
 		for i, f := range c.Fields {
 			if f.Name == key {
 				c.Fields[i].Initial = val
-				e := Error{
-					Message: "",
-					Type:    "",
-				}
 				// Validate the field value
 				if f.Validate {
 					if val == "" || val == "<nil>" {
@@ -266,8 +274,23 @@ func validate(r *http.Request, c *Config) {
 					} else {
 						f.Value = val
 					}
+					// Test filed matches
 				}
 				// Set Error Message
+				c.Fields[i].Error = e
+				// set the error message & pass in a fileErr which may or may not be nil
+				setErrorMessage(&c.Fields[i], fileErr)
+			}
+		}
+	}
+	// All field values have been set on the config object - now perform matching validation
+	for i, f := range c.Fields {
+		if f.Matches != "" {
+			var matchedField Field
+			// Set a temporary matchedField var with the matching field only for matching
+			setFieldByName(c, f.Matches, &matchedField)
+			if f.Value != matchedField.Value {
+				e.Type = ERROR_FIELDS_DO_NOT_MATCH
 				c.Fields[i].Error = e
 				setErrorMessage(&c.Fields[i], fileErr)
 			}
