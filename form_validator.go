@@ -283,8 +283,15 @@ func validate(r *http.Request, c *Config) {
 			}
 		}
 	}
-	// All field values have been set on the config object - now perform matching validation
+
 	for i, f := range c.Fields {
+		// If the form field undeclared then set an error
+		if f.Validate && f.Value == nil {
+			e.Type = ERROR_MISSING_VALUE
+			c.Fields[i].Error = e
+			setErrorMessage(&c.Fields[i], fileErr)
+		}
+		// All field values have been set on the config object - now perform matching validation
 		if f.Matches != "" {
 			var matchedField Field
 			// Set a temporary matchedField var with the matching field only for matching
