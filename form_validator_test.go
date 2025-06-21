@@ -18,6 +18,50 @@ func createFormRequest(data url.Values, fn func(http.ResponseWriter, *http.Reque
 	handler(w, r)
 }
 
+func TestValidateMultiPartForm(t *testing.T) {
+	c := Config{
+		MaxMemory: 0,
+		Fields: []Field{
+			{
+				Name:     "name",
+				Validate: true,
+				Default:  "John",
+				Type:     "string",
+			},
+			{
+				Name:     "email",
+				Validate: false,
+				Type:     "string",
+			},
+		},
+	}
+
+	data := url.Values{}
+	data.Set("name", "Joe")
+	data.Set("email", "joe@email.com")
+
+	createFormRequest(data, func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if ok := ValidateForm(r, &c); ok {
+			name := c.Fields[0]
+			email := c.Fields[1]
+			if name.Name != "name" {
+				t.Logf("expected name but got %s\n", name.Name)
+				t.Fail()
+			}
+			if name.Value != "Joe" {
+				t.Logf("expected Joe but got %s\n", name.Value)
+				t.Fail()
+			}
+			if email.Value != "joe@email.com" {
+				t.Logf("expected joe@email.com but got %s\n", email.Value)
+				t.Fail()
+			}
+
+		}
+	})
+}
+
 func TestValidFormContainsFieldMembers(t *testing.T) {
 	c := Config{
 		MaxMemory: 0,
@@ -52,6 +96,10 @@ func TestValidFormContainsFieldMembers(t *testing.T) {
 				t.Logf("expected name but got %s\n", name.Name)
 				t.Fail()
 			}
+			if name.Value != "Joe" {
+				t.Logf("expected Joe but got %s\n", name.Value)
+				t.Fail()
+			}
 			if name.Validate != true {
 				t.Logf("expected true but got %v", name.Validate)
 				t.Fail()
@@ -76,6 +124,10 @@ func TestValidFormContainsFieldMembers(t *testing.T) {
 				t.Logf("expected email but got %s\n", name.Name)
 				t.Fail()
 			}
+			if email.Value != "joe@email.com" {
+				t.Logf("expected joe@email.com but got %s\n", email.Value)
+				t.Fail()
+			}
 			if email.Validate != false {
 				t.Logf("expected false but got %v", email.Validate)
 				t.Fail()
@@ -89,7 +141,7 @@ func TestValidFormContainsFieldMembers(t *testing.T) {
 				t.Fail()
 			}
 			if email.Initial != "joe@email.com" {
-				t.Logf("expected Joe but got %s\n", email.Initial)
+				t.Logf("expected joe@email.com but got %s\n", email.Initial)
 				t.Fail()
 			}
 			if email.Error.Message != "" {
