@@ -265,16 +265,19 @@ func validate(r *http.Request, c *Config) {
 						if f.Type == "file" {
 							cf, _, fileErr := r.FormFile(f.Name)
 							if fileErr != nil {
-								f.Error.Type = ERROR_FILE_TYPE
+								c.Fields[i].Error.Type = ERROR_FILE_TYPE
 							}
 							if cf == nil {
-								f.Error.Type = ERROR_MISSING_VALUE
+								c.Fields[i].Error.Type = ERROR_MISSING_VALUE
 							}
 						}
 					} else {
-						f.Value = val
+						c.Fields[i].Value = val
 					}
 					// Test filed matches
+				} else {
+					// set the value for unvalidated fields
+					c.Fields[i].Value = val
 				}
 				// Set Error Message
 				c.Fields[i].Error = e
