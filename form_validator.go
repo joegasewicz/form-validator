@@ -241,14 +241,6 @@ func validate(r *http.Request, c *Config) {
 		Message: "",
 		Type:    "",
 	}
-	if len(r.Form) == 0 {
-		// Set all form fields as errored
-		for i, _ := range c.Fields {
-			c.Fields[i].Error.Type = ERROR_MISSING_VALUE
-			setErrorMessage(&c.Fields[i], fileErr)
-		}
-		return
-	}
 	for key, value := range r.Form {
 		val := strings.Join(value, "")
 		for i, f := range c.Fields {
