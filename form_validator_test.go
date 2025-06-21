@@ -33,6 +33,11 @@ func TestValidateMultiPartForm(t *testing.T) {
 				Validate: false,
 				Type:     "string",
 			},
+			{
+				Name:     "title",
+				Validate: false,
+				Type:     "string",
+			},
 		},
 	}
 
@@ -76,6 +81,11 @@ func TestValidFormContainsFieldMembers(t *testing.T) {
 				Name:     "email",
 				Validate: false,
 				Default:  "",
+				Type:     "string",
+			},
+			{
+				Name:     "title",
+				Validate: false,
 				Type:     "string",
 			},
 		},
